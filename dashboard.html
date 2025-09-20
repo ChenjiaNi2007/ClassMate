@@ -790,19 +790,19 @@
         <!-- Overview Tab -->
         <div id="overview" class="tab-content active">
             <div class="quick-actions">
-                <a href="#" class="action-card" onclick="showTab('recordings')">
+                <a href="#" class="action-card" onclick="switchToTab(event, 'recordings')">
                     <h3>🎧 Latest Recordings</h3>
                     <p>3 new recordings</p>
                 </a>
-                <a href="#" class="action-card" onclick="showTab('attendance')">
+                <a href="#" class="action-card" onclick="switchToTab(event, 'attendance')">
                     <h3>✅ Attendance Alerts</h3>
                     <p>2 active alerts</p>
                 </a>
-                <a href="#" class="action-card" onclick="showTab('community')">
+                <a href="#" class="action-card" onclick="switchToTab(event, 'community')">
                     <h3>💬 Community</h3>
                     <p>5 new messages</p>
                 </a>
-                <a href="#" class="action-card" onclick="showTab('calendar')">
+                <a href="#" class="action-card" onclick="switchToTab(event, 'calendar')">
                     <h3>📅 Upcoming</h3>
                     <p>Quiz tomorrow</p>
                 </a>
@@ -882,7 +882,24 @@
             <div class="card">
                 <h3>📱 Record New Lecture</h3>
                 <p style="margin-bottom: 1.5rem; color: #94a3b8;">Start recording when you're in class to contribute to the community!</p>
-                <button class="btn btn-danger" onclick="startRecording()" style="padding: 1rem 2rem; font-size: 1.1rem;">🔴 Start Recording</button>
+                
+                <!-- Course Selection for Recording -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="recordingCourseSelect">Select Course:</label>
+                    <select id="recordingCourseSelect">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <!-- Recording Controls -->
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <button id="record-button" class="btn btn-danger" onclick="toggleRecording()" style="padding: 1rem 2rem; font-size: 1.1rem;">🔴 Start Recording</button>
+                    <span id="recording-status" class="pill" style="padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px;">Ready</span>
+                    <span id="recording-timer" class="pill" style="padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; display: none;">00:00</span>
+                </div>
+                
+                <!-- Recording Results -->
+                <div id="recording-results"></div>
             </div>
         </div>
 
@@ -1080,6 +1097,7 @@
         </div>
     </div>
 
+    <script src="lecture-recorder.js"></script>
     <script>
         // Tab navigation
         function showTab(tabId) {
@@ -1096,6 +1114,84 @@
             
             // Add active class to clicked button
             event.target.classList.add('active');
+        }
+
+        // Helper function for action cards to switch tabs
+        function switchToTab(event, tabId) {
+            event.preventDefault();
+            
+            // Remove active from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Find and activate the correct tab button
+            const targetButton = Array.from(tabButtons).find(button => 
+                button.onclick && button.onclick.toString().includes(tabId)
+            );
+            if (targetButton) {
+                targetButton.classList.add('active');
+            }
+            
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Recording functionality
+        function toggleRecording() {
+            // Check if LectureRecorder is available
+            if (typeof LectureRecorder === 'undefined') {
+                console.error('LectureRecorder class not found');
+                alert('Recording system not loaded. Please refresh the page and try again.');
+                return;
+            }
+            
+            // Initialize recorder if not already done
+            if (!window.lectureRecorder) {
+                window.lectureRecorder = new LectureRecorder();
+                console.log('LectureRecorder initialized');
+            }
+            
+            if (lectureRecorder.isRecording) {
+                lectureRecorder.stopRecording();
+            } else {
+                lectureRecorder.startRecording();
+            }
+        }
+
+        // Placeholder functions for future functionality
+        function playRecording(recordingId) {
+            alert(`Playing recording: ${recordingId}`);
+        }
+
+        function viewTranscript(recordingId) {
+            alert(`Viewing transcript for: ${recordingId}`);
+        }
+
+        function markAttendanceHandled(alertId) {
+            alert(`Marking attendance alert as handled: ${alertId}`);
+            // Remove the alert from DOM
+            event.target.closest('.attendance-alert').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                alert(`Sending message: ${message}`);
+                input.value = '';
+            }
+        }
+
+        function joinStudySession(sessionId) {
+            alert(`Joining study session: ${sessionId}`);
+        }
+
+        function createStudySession() {
+            alert('Opening create study session form...');
         }
 
         // Placeholder functions for future functionality
@@ -1196,17 +1292,21 @@
             const coursesToDisplay = courses.length > 0 ? courses : defaultCourses;
             const courseFilter = document.getElementById('courseFilter');
             const attendanceCourse = document.getElementById('attendanceCourse');
+            const recordingCourse = document.getElementById('recordingCourseSelect');
             
-            // Clear existing options (except "All Courses")
+            // Clear existing options (except "All Courses" for filter)
             courseFilter.innerHTML = '<option value="all">All Courses</option>';
             attendanceCourse.innerHTML = '';
+            if (recordingCourse) recordingCourse.innerHTML = '';
             
             coursesToDisplay.forEach(course => {
                 const option1 = new Option(course, course.toLowerCase().replace(/\s+/g, ''));
                 const option2 = new Option(course, course);
+                const option3 = new Option(course, course);
                 
                 courseFilter.appendChild(option1);
                 attendanceCourse.appendChild(option2);
+                if (recordingCourse) recordingCourse.appendChild(option3);
             });
         }
 

@@ -492,12 +492,10 @@
                 
                 // Simulate login delay
                 setTimeout(() => {
-                    // Extract university info and simulate login success
-                    const university = extractUniversity(email);
-                    updateUniversityInfo(university);
+                    // For login, go directly to dashboard since user already has courses
                     button.textContent = originalText;
                     button.classList.remove('loading');
-                    showPage('courseSelection');
+                    window.location.href = 'dashboard.html';
                 }, 1500);
             });
 
@@ -526,6 +524,7 @@
                     updateUniversityInfo(university);
                     button.textContent = originalText;
                     button.classList.remove('loading');
+                    // For new signups, go to course selection
                     showPage('courseSelection');
                 }, 1500);
             });
