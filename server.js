@@ -5,11 +5,14 @@ const path = require('path');
 const fs = require('fs');
 const OpenAI = require('openai');
 
+// Create Express app
 const app = express();
 const port = 3000;
 
 // Initialize OpenAI client
-const openai = new OpenAI();
+const openai = new OpenAI({
+    apiKey: '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'
+});
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -22,7 +25,9 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'lecture-' + uniqueSuffix + path.extname(file.originalname));
+        const fileExtension = path.extname(file.originalname);
+        const baseName = path.basename(file.originalname, fileExtension);
+        cb(null, baseName + '-' + uniqueSuffix + fileExtension);
     }
 });
 
@@ -32,25 +37,36 @@ const upload = multer({
         fileSize: 100 * 1024 * 1024 // 100MB limit
     },
     fileFilter: (req, file, cb) => {
-        // Accept audio files
-        if (file.mimetype.startsWith('audio/')) {
+        // Accept audio files for recordings and documents for resources
+        if (file.mimetype.startsWith('audio/') || 
+            file.mimetype.startsWith('image/') ||
+            file.mimetype.includes('pdf') ||
+            file.mimetype.includes('document') ||
+            file.mimetype.includes('word') ||
+            file.mimetype.includes('powerpoint') ||
+            file.mimetype.includes('text') ||
+            file.originalname.match(/\.(pdf|doc|docx|ppt|pptx|txt|jpg|jpeg|png|gif)$/i)) {
             cb(null, true);
         } else {
-            cb(new Error('Only audio files are allowed!'), false);
+            cb(new Error('File type not supported!'), false);
         }
     }
 });
 
-// Serve static files
+// Middleware
 app.use(express.static('.'));
 app.use(express.json());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        message: 'Classmate server is running!'
+    });
 });
 
-// Main processing endpoint
+// Recording processing endpoint
 app.post('/api/process-recording', upload.single('audio'), async (req, res) => {
     console.log('Processing recording request...');
     
@@ -64,13 +80,13 @@ app.post('/api/process-recording', upload.single('audio'), async (req, res) => {
             return res.status(400).json({ error: 'No audio file provided' });
         }
 
-        console.log('File received:', {
+        console.log('Audio file received:', {
             filename: audioFile.filename,
             size: audioFile.size,
             course: course
         });
 
-        // Step 1: Transcribe audio using OpenAI Whisper
+        // Transcribe audio using OpenAI Whisper
         console.log('Starting transcription...');
         const transcription = await openai.audio.transcriptions.create({
             file: fs.createReadStream(audioFile.path),
@@ -81,27 +97,22 @@ app.post('/api/process-recording', upload.single('audio'), async (req, res) => {
 
         console.log('Transcription completed, length:', transcription.length);
 
-        // Step 2: Generate summary using GPT
+        // Generate summary using GPT
         console.log('Generating summary...');
         const summaryResponse = await openai.chat.completions.create({
             model: "gpt-4",
             messages: [{
                 role: "system",
-                content: `You are an assistant that summarizes classroom lecture transcripts. Your task is to extract and organize the most important information for a student who missed class.
+                content: `You are an assistant that summarizes classroom lecture transcripts. Extract and organize the most important information for a student who missed class.
 
-From the following transcript, please provide:
+Provide:
+- Key Concepts & Definitions
+- Examples / Applications  
+- Important Questions
+- Announcements / Reminders
+- Summary in Plain English
 
-**Key Concepts & Definitions** — the main ideas the instructor emphasized.
-
-**Examples / Applications** — any real-world examples, demonstrations, or problems the instructor gave.
-
-**Important Questions** — questions asked by students or the instructor that help clarify the material.
-
-**Announcements / Reminders** — homework due dates, quiz/exam info, or project updates.
-
-**Summary in Plain English** — a short paragraph that makes the content easy to understand, as if explaining to a peer.
-
-Format the output in clear sections with bullet points where useful. Avoid filler words or tangents.`
+Format with clear sections and bullet points.`
             }, {
                 role: "user", 
                 content: transcription
@@ -109,9 +120,9 @@ Format the output in clear sections with bullet points where useful. Avoid fille
         });
 
         const summary = summaryResponse.choices[0].message.content;
-        console.log('Summary generated, length:', summary.length);
+        console.log('Summary generated');
 
-        // Step 3: Save recording metadata (in a real app, this would go to a database)
+        // Save recording data
         const recordingData = {
             id: generateRecordingId(),
             course: course,
@@ -123,35 +134,8 @@ Format the output in clear sections with bullet points where useful. Avoid fille
             created: new Date().toISOString()
         };
 
-        // Save to JSON file (replace with database in production)
-        const recordingsFile = './data/recordings.json';
-        let recordings = [];
-        
-        // Create data directory if it doesn't exist
-        if (!fs.existsSync('./data')) {
-            fs.mkdirSync('./data', { recursive: true });
-        }
-        
-        // Load existing recordings
-        if (fs.existsSync(recordingsFile)) {
-            try {
-                recordings = JSON.parse(fs.readFileSync(recordingsFile, 'utf8'));
-            } catch (e) {
-                console.log('Creating new recordings file...');
-                recordings = [];
-            }
-        }
-        
-        // Add new recording
-        recordings.push(recordingData);
-        
-        // Save back to file
-        fs.writeFileSync(recordingsFile, JSON.stringify(recordings, null, 2));
-
+        saveToFile('./data/recordings.json', recordingData);
         console.log('Recording saved with ID:', recordingData.id);
-
-        // Clean up uploaded file (optional - you might want to keep it)
-        // fs.unlinkSync(audioFile.path);
 
         res.json({
             success: true,
@@ -163,9 +147,8 @@ Format the output in clear sections with bullet points where useful. Avoid fille
         });
 
     } catch (error) {
-        console.error('Processing failed:', error);
+        console.error('Recording processing failed:', error);
         
-        // Clean up file on error
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
@@ -177,41 +160,161 @@ Format the output in clear sections with bullet points where useful. Avoid fille
     }
 });
 
+// Resource upload endpoint
+app.post('/api/upload-resource', upload.single('file'), async (req, res) => {
+    console.log('Processing resource upload...');
+    
+    try {
+        const uploadedFile = req.file;
+        const { course, title, description, isPublic, uploader } = req.body;
+
+        if (!uploadedFile) {
+            return res.status(400).json({ error: 'No file provided' });
+        }
+
+        if (!course || !title) {
+            return res.status(400).json({ error: 'Course and title are required' });
+        }
+
+        console.log('Resource file received:', {
+            filename: uploadedFile.filename,
+            originalName: uploadedFile.originalname,
+            size: uploadedFile.size,
+            course: course,
+            title: title
+        });
+
+        const resourceData = {
+            id: generateResourceId(),
+            course: course,
+            title: title,
+            description: description || '',
+            fileName: uploadedFile.originalname,
+            storedFileName: uploadedFile.filename,
+            fileSize: uploadedFile.size,
+            mimeType: uploadedFile.mimetype,
+            uploader: uploader || 'Anonymous',
+            uploadDate: new Date().toISOString(),
+            downloads: 0,
+            isPublic: isPublic === 'true',
+            filePath: uploadedFile.path
+        };
+
+        saveToFile('./data/resources.json', resourceData);
+        console.log('Resource saved with ID:', resourceData.id);
+
+        res.json({
+            success: true,
+            id: resourceData.id,
+            course: resourceData.course,
+            title: resourceData.title,
+            description: resourceData.description,
+            fileName: resourceData.fileName,
+            fileSize: resourceData.fileSize,
+            uploader: resourceData.uploader,
+            uploadDate: resourceData.uploadDate,
+            downloads: resourceData.downloads,
+            isPublic: resourceData.isPublic
+        });
+
+    } catch (error) {
+        console.error('Resource upload failed:', error);
+        
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        
+        res.status(500).json({ 
+            error: 'Failed to upload resource',
+            details: error.message 
+        });
+    }
+});
+
 // Get all recordings
 app.get('/api/recordings', (req, res) => {
-    const recordingsFile = './data/recordings.json';
-    
-    if (fs.existsSync(recordingsFile)) {
-        try {
-            const recordings = JSON.parse(fs.readFileSync(recordingsFile, 'utf8'));
-            res.json(recordings);
-        } catch (e) {
-            res.json([]);
-        }
-    } else {
-        res.json([]);
-    }
+    const recordings = loadFromFile('./data/recordings.json');
+    res.json(recordings);
 });
 
 // Get specific recording
 app.get('/api/recordings/:id', (req, res) => {
-    const recordingsFile = './data/recordings.json';
+    const recordings = loadFromFile('./data/recordings.json');
+    const recording = recordings.find(r => r.id === req.params.id);
     
-    if (fs.existsSync(recordingsFile)) {
-        try {
-            const recordings = JSON.parse(fs.readFileSync(recordingsFile, 'utf8'));
-            const recording = recordings.find(r => r.id === req.params.id);
-            
-            if (recording) {
-                res.json(recording);
-            } else {
-                res.status(404).json({ error: 'Recording not found' });
-            }
-        } catch (e) {
-            res.status(500).json({ error: 'Failed to load recording' });
-        }
+    if (recording) {
+        res.json(recording);
     } else {
-        res.status(404).json({ error: 'No recordings found' });
+        res.status(404).json({ error: 'Recording not found' });
+    }
+});
+
+// Get all resources
+app.get('/api/resources', (req, res) => {
+    const resources = loadFromFile('./data/resources.json');
+    // Don't expose file paths to client
+    const publicResources = resources.map(r => ({
+        id: r.id,
+        course: r.course,
+        title: r.title,
+        description: r.description,
+        fileName: r.fileName,
+        fileSize: r.fileSize,
+        uploader: r.uploader,
+        uploadDate: r.uploadDate,
+        downloads: r.downloads,
+        isPublic: r.isPublic
+    }));
+    res.json(publicResources);
+});
+
+// Download resource
+app.get('/api/resources/:id/download', (req, res) => {
+    const resources = loadFromFile('./data/resources.json');
+    const resource = resources.find(r => r.id === req.params.id);
+    
+    if (resource && fs.existsSync(resource.filePath)) {
+        // Increment download count
+        resource.downloads++;
+        const allResources = loadFromFile('./data/resources.json');
+        const updatedResources = allResources.map(r => 
+            r.id === resource.id ? resource : r
+        );
+        fs.writeFileSync('./data/resources.json', JSON.stringify(updatedResources, null, 2));
+        
+        // Send file
+        res.download(resource.filePath, resource.fileName);
+    } else {
+        res.status(404).json({ error: 'Resource not found' });
+    }
+});
+
+// Delete resource
+app.delete('/api/resources/:id', (req, res) => {
+    try {
+        const resources = loadFromFile('./data/resources.json');
+        const resourceIndex = resources.findIndex(r => r.id === req.params.id);
+        
+        if (resourceIndex !== -1) {
+            const resource = resources[resourceIndex];
+            
+            // Delete file from disk
+            if (fs.existsSync(resource.filePath)) {
+                fs.unlinkSync(resource.filePath);
+            }
+            
+            // Remove from array
+            resources.splice(resourceIndex, 1);
+            
+            // Save updated resources
+            fs.writeFileSync('./data/resources.json', JSON.stringify(resources, null, 2));
+            
+            res.json({ success: true, message: 'Resource deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Resource not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete resource' });
     }
 });
 
@@ -227,21 +330,68 @@ app.use((error, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-// Helper function to generate recording IDs
+// Helper functions
 function generateRecordingId() {
     return 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+function generateResourceId() {
+    return 'resource_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function saveToFile(filePath, newData) {
+    // Create directory if it doesn't exist
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    
+    // Load existing data
+    let existingData = [];
+    if (fs.existsSync(filePath)) {
+        try {
+            existingData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        } catch (e) {
+            console.log('Creating new file:', filePath);
+            existingData = [];
+        }
+    }
+    
+    // Add new data
+    existingData.push(newData);
+    
+    // Save back to file
+    fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+}
+
+function loadFromFile(filePath) {
+    if (fs.existsSync(filePath)) {
+        try {
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        } catch (e) {
+            console.error('Error reading file:', filePath, e);
+            return [];
+        }
+    }
+    return [];
+}
+
 // Start server
 app.listen(port, () => {
-    console.log(`🚀 Server running at http://localhost:${port}`);
+    console.log('🚀 Classmate Server Started Successfully!');
+    console.log(`📍 Server URL: http://localhost:${port}`);
     console.log(`📁 Upload directory: ./uploads`);
     console.log(`💾 Data directory: ./data`);
+    console.log('');
     
     // Check OpenAI API key
     if (!process.env.OPENAI_API_KEY && openai.apiKey === 'your-openai-api-key-here') {
-        console.warn('⚠️  Warning: OpenAI API key not set. Update OPENAI_API_KEY environment variable or edit server.js');
+        console.log('⚠️  OpenAI API key not configured.');
+        console.log('   Set OPENAI_API_KEY environment variable or edit server.js');
+        console.log('');
     }
+    
+    console.log('✅ Server ready for connections!');
 });
 
 module.exports = app;

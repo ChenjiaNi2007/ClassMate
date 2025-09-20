@@ -726,28 +726,80 @@
             }
         }
 
-        /* Loading States */
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
+        /* File Upload Styling */
+        .file-upload-area {
+            border: 2px dashed rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(10px);
         }
 
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .file-upload-area:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(59, 130, 246, 0.1);
         }
 
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+        .file-upload-area.drag-over {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+            transform: scale(1.02);
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .file-preview-icon {
+            font-size: 2rem;
+        }
+
+        .file-preview-info h5 {
+            margin: 0;
+            color: #f1f5f9;
+        }
+
+        .file-preview-info p {
+            margin: 0.25rem 0 0 0;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.6);
+            color: #e2e8f0;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.8);
+            transform: translateY(-1px);
+        }
+
+        /* Progress bar for uploads */
+        .upload-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -1054,7 +1106,7 @@
             <div class="card">
                 <h3>📖 Shared Resources</h3>
                 
-                <div style="display: grid; gap: 1rem;">
+                <div style="display: grid; gap: 1rem;" id="resources-list">
                     <div class="course-card">
                         <h4>MATH 101 - Calculus Study Guide</h4>
                         <p style="color: #94a3b8; margin-bottom: 1rem;">Shared by: Sarah M. • Downloaded: 45 times</p>
@@ -1074,7 +1126,56 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-warning" style="margin-top: 1rem;">+ Upload Resource</button>
+                <button class="btn btn-warning" onclick="showUploadForm()" style="margin-top: 1rem;">+ Upload Resource</button>
+            </div>
+
+            <!-- Upload Form (Initially Hidden) -->
+            <div id="upload-form-card" class="card" style="display: none;">
+                <h3>📤 Upload New Resource</h3>
+                <form id="resource-upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="resource-course">Course</label>
+                        <select id="resource-course" required>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resource-title">Resource Title</label>
+                        <input type="text" id="resource-title" placeholder="e.g., Chapter 5 Study Guide" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resource-description">Description (Optional)</label>
+                        <textarea id="resource-description" rows="2" placeholder="Brief description of the resource..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resource-file">Select File</label>
+                        <div class="file-upload-area" onclick="document.getElementById('resource-file').click()">
+                            <input type="file" id="resource-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" style="display: none;" required>
+                            <div id="file-upload-content">
+                                <div style="font-size: 2rem; margin-bottom: 1rem;">📁</div>
+                                <p>Click to select file or drag and drop</p>
+                                <p style="font-size: 0.9rem; color: #94a3b8;">Supports: PDF, Word, PowerPoint, Images, Text files</p>
+                                <p style="font-size: 0.8rem; color: #64748b;">Max file size: 50MB</p>
+                            </div>
+                        </div>
+                        <div id="file-preview" style="margin-top: 1rem; display: none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="resource-public" checked style="margin-right: 0.5rem;">
+                            Make this resource public to all course members
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-success" id="upload-submit-btn">📤 Upload Resource</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideUploadForm()">Cancel</button>
+                    </div>
+                </form>
             </div>
 
             <div class="card">
@@ -1293,20 +1394,266 @@
             const courseFilter = document.getElementById('courseFilter');
             const attendanceCourse = document.getElementById('attendanceCourse');
             const recordingCourse = document.getElementById('recordingCourseSelect');
+            const resourceCourse = document.getElementById('resource-course');
             
             // Clear existing options (except "All Courses" for filter)
             courseFilter.innerHTML = '<option value="all">All Courses</option>';
             attendanceCourse.innerHTML = '';
             if (recordingCourse) recordingCourse.innerHTML = '';
+            if (resourceCourse) resourceCourse.innerHTML = '';
             
             coursesToDisplay.forEach(course => {
                 const option1 = new Option(course, course.toLowerCase().replace(/\s+/g, ''));
                 const option2 = new Option(course, course);
                 const option3 = new Option(course, course);
+                const option4 = new Option(course, course);
                 
                 courseFilter.appendChild(option1);
                 attendanceCourse.appendChild(option2);
                 if (recordingCourse) recordingCourse.appendChild(option3);
+                if (resourceCourse) resourceCourse.appendChild(option4);
+            });
+        }
+
+        // Resource upload functionality
+        function showUploadForm() {
+            document.getElementById('upload-form-card').style.display = 'block';
+            document.getElementById('upload-form-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideUploadForm() {
+            document.getElementById('upload-form-card').style.display = 'none';
+            document.getElementById('resource-upload-form').reset();
+            document.getElementById('file-preview').style.display = 'none';
+        }
+
+        function setupFileUpload() {
+            const fileInput = document.getElementById('resource-file');
+            const uploadArea = document.querySelector('.file-upload-area');
+            const filePreview = document.getElementById('file-preview');
+
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    showFilePreview(file);
+                }
+            });
+
+            // Drag and drop handlers
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    showFilePreview(files[0]);
+                }
+            });
+
+            // Form submission handler
+            document.getElementById('resource-upload-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                uploadResource();
+            });
+        }
+
+        function showFilePreview(file) {
+            const filePreview = document.getElementById('file-preview');
+            const fileName = file.name;
+            const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            const fileType = file.type || 'Unknown';
+            
+            // Get file icon based on type
+            let icon = '📄';
+            if (file.type.includes('pdf')) icon = '📕';
+            else if (file.type.includes('image')) icon = '🖼️';
+            else if (file.type.includes('word') || file.name.includes('.doc')) icon = '📝';
+            else if (file.type.includes('powerpoint') || file.name.includes('.ppt')) icon = '📊';
+            else if (file.type.includes('text')) icon = '📃';
+
+            filePreview.innerHTML = `
+                <div class="file-preview">
+                    <div class="file-preview-icon">${icon}</div>
+                    <div class="file-preview-info">
+                        <h5>${fileName}</h5>
+                        <p>${fileSize} • ${fileType}</p>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="clearFileSelection()">×</button>
+                </div>
+            `;
+            filePreview.style.display = 'block';
+        }
+
+        function clearFileSelection() {
+            document.getElementById('resource-file').value = '';
+            document.getElementById('file-preview').style.display = 'none';
+        }
+
+        async function uploadResource() {
+            const form = document.getElementById('resource-upload-form');
+            const submitBtn = document.getElementById('upload-submit-btn');
+            const formData = new FormData();
+
+            // Get form values
+            const course = document.getElementById('resource-course').value;
+            const title = document.getElementById('resource-title').value;
+            const description = document.getElementById('resource-description').value;
+            const file = document.getElementById('resource-file').files[0];
+            const isPublic = document.getElementById('resource-public').checked;
+
+            if (!course || !title || !file) {
+                alert('Please fill in all required fields and select a file.');
+                return;
+            }
+
+            // Check file size (50MB limit)
+            if (file.size > 50 * 1024 * 1024) {
+                alert('File size must be less than 50MB.');
+                return;
+            }
+
+            // Prepare form data
+            formData.append('file', file);
+            formData.append('course', course);
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('isPublic', isPublic);
+            formData.append('uploader', 'John Doe'); // In real app, get from user session
+
+            // Update UI to show uploading state
+            submitBtn.textContent = '⏳ Uploading...';
+            submitBtn.disabled = true;
+
+            // Add progress bar
+            const progressHTML = `
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" id="progress-bar"></div>
+                </div>
+            `;
+            document.getElementById('file-preview').insertAdjacentHTML('beforeend', progressHTML);
+
+            try {
+                const response = await fetch('/api/upload-resource', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Upload successful:', result);
+                    
+                    // Add to resources list
+                    addResourceToList(result);
+                    
+                    // Reset form and hide
+                    hideUploadForm();
+                    alert('Resource uploaded successfully!');
+                    
+                } else {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                
+                // Fallback: Store in localStorage for demo
+                const resource = {
+                    id: 'res_' + Date.now(),
+                    course: course,
+                    title: title,
+                    description: description,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    uploader: 'John Doe',
+                    uploadDate: new Date().toISOString(),
+                    downloads: 0,
+                    isPublic: isPublic
+                };
+
+                // Save to localStorage
+                const resources = JSON.parse(localStorage.getItem('userResources') || '[]');
+                resources.push(resource);
+                localStorage.setItem('userResources', JSON.stringify(resources));
+
+                // Add to UI
+                addResourceToList(resource);
+                
+                // Reset form and hide
+                hideUploadForm();
+                alert('Resource saved locally! (Server upload failed, but resource is stored in browser)');
+            }
+
+            // Reset button state
+            submitBtn.textContent = '📤 Upload Resource';
+            submitBtn.disabled = false;
+        }
+
+        function addResourceToList(resource) {
+            const resourcesList = document.getElementById('resources-list');
+            
+            const resourceCard = document.createElement('div');
+            resourceCard.className = 'course-card';
+            resourceCard.innerHTML = `
+                <h4>${resource.course} - ${resource.title}</h4>
+                <p style="color: #94a3b8; margin-bottom: 0.5rem;">${resource.description || 'No description'}</p>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Shared by: ${resource.uploader} • Downloaded: ${resource.downloads} times</p>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary" onclick="downloadResource('${resource.id}')">📄 Download ${getFileExtension(resource.fileName)}</button>
+                    <button class="btn btn-secondary" onclick="deleteResource('${resource.id}')">🗑️ Delete</button>
+                </div>
+            `;
+            
+            // Add to beginning of list
+            resourcesList.insertBefore(resourceCard, resourcesList.firstChild);
+        }
+
+        function getFileExtension(fileName) {
+            const ext = fileName.split('.').pop().toUpperCase();
+            return ext;
+        }
+
+        function downloadResource(resourceId) {
+            // In a real app, this would download from server
+            alert(`Downloading resource: ${resourceId}`);
+            
+            // Update download count in localStorage
+            const resources = JSON.parse(localStorage.getItem('userResources') || '[]');
+            const resource = resources.find(r => r.id === resourceId);
+            if (resource) {
+                resource.downloads++;
+                localStorage.setItem('userResources', JSON.stringify(resources));
+            }
+        }
+
+        function deleteResource(resourceId) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                // Remove from localStorage
+                const resources = JSON.parse(localStorage.getItem('userResources') || '[]');
+                const filteredResources = resources.filter(r => r.id !== resourceId);
+                localStorage.setItem('userResources', JSON.stringify(filteredResources));
+                
+                // Remove from UI
+                location.reload(); // Simple refresh for demo
+                alert('Resource deleted successfully!');
+            }
+        }
+
+        function loadUserResources() {
+            const resources = JSON.parse(localStorage.getItem('userResources') || '[]');
+            resources.forEach(resource => {
+                addResourceToList(resource);
             });
         }
 
