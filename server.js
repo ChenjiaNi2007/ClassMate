@@ -10,7 +10,7 @@ const port = 3000;
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-    apiKey: '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'
+    apiKey: ''
 });
 
 // Configure multer for file uploads
