@@ -12,23 +12,45 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e2e8f0;
+            background: #0f172a;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         /* Navigation */
         nav {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem 0;
             position: fixed;
             width: 100%;
@@ -44,8 +66,11 @@
 
         .logo {
             font-size: 1.8rem;
-            font-weight: bold;
-            color: white;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-decoration: none;
         }
 
@@ -55,13 +80,30 @@
         }
 
         .nav-links a {
-            color: white;
+            color: #cbd5e1;
             text-decoration: none;
-            transition: opacity 0.3s;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s ease;
         }
 
         .nav-links a:hover {
-            opacity: 0.8;
+            color: #f1f5f9;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
         /* Pages */
@@ -85,19 +127,34 @@
         }
 
         .auth-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
 
         .auth-card h2 {
             text-align: center;
             margin-bottom: 2rem;
-            color: #333;
+            color: #f1f5f9;
+            font-weight: 700;
+            font-size: 1.8rem;
         }
 
         .form-group {
@@ -107,80 +164,135 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: bold;
-            color: #555;
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.9rem;
         }
 
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            background: rgba(15, 23, 42, 0.5);
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
         }
 
         .auth-button {
             width: 100%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             color: white;
-            padding: 1rem;
+            padding: 1.2rem;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1.1rem;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .auth-button:hover::before {
+            left: 100%;
         }
 
         .auth-button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
         }
 
         .switch-auth {
             text-align: center;
-            margin-top: 1rem;
-            color: #666;
+            margin-top: 1.5rem;
+            color: #94a3b8;
         }
 
         .switch-auth a {
-            color: #667eea;
+            color: #3b82f6;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .switch-auth a:hover {
+            color: #60a5fa;
         }
 
         .add-course-btn {
-            background: #28a745;
+            background: linear-gradient(135deg, #059669, #10b981);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
             margin-bottom: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .add-course-btn:hover {
-            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
         }
 
         /* University Info */
         .university-info {
-            background: rgba(103, 126, 234, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 1.5rem;
+            border-radius: 16px;
             margin-bottom: 2rem;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .university-info h3 {
-            color: #667eea;
+            color: #60a5fa;
             margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .university-info p {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+
+        .loading {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
         }
 
         /* Responsive */
@@ -192,7 +304,23 @@
             .auth-card {
                 margin: 1rem;
                 padding: 2rem;
+                max-width: none;
             }
+
+            .container {
+                padding: 0 16px;
+            }
+        }
+
+        /* Success Animation */
+        @keyframes success {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-animation {
+            animation: success 0.6s ease-out;
         }
     </style>
 </head>
@@ -223,7 +351,7 @@
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
                     </div>
                     <button type="submit" class="auth-button">Sign In</button>
                 </form>
@@ -242,7 +370,7 @@
                 <form id="signupForm">
                     <div class="form-group">
                         <label for="fullName">Full Name</label>
-                        <input type="text" id="fullName" name="fullName" required>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
                     </div>
                     <div class="form-group">
                         <label for="signupEmail">University Email</label>
@@ -250,11 +378,11 @@
                     </div>
                     <div class="form-group">
                         <label for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" name="password" required>
+                        <input type="password" id="signupPassword" name="password" placeholder="Create a strong password" required>
                     </div>
                     <div class="form-group">
                         <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
                     </div>
                     <button type="submit" class="auth-button">Create Account</button>
                 </form>
@@ -268,7 +396,7 @@
     <!-- Course Selection Page -->
     <div id="courseSelection" class="page">
         <div class="auth-container">
-            <div class="auth-card" style="max-width: 500px;">
+            <div class="auth-card" style="max-width: 520px;">
                 <h2>Select Your Courses</h2>
                 
                 <div class="university-info">
@@ -276,7 +404,7 @@
                     <p>You've been connected with 2,847 students from your university!</p>
                 </div>
                 
-                <p style="text-align: center; margin-bottom: 2rem; color: #666;">Add the classes you're currently enrolled in:</p>
+                <p style="text-align: center; margin-bottom: 2rem; color: #94a3b8;">Add the classes you're currently enrolled in:</p>
                 
                 <form id="courseForm">
                     <div class="form-group">
@@ -356,10 +484,21 @@
                 e.preventDefault();
                 const email = document.getElementById('email').value;
                 
-                // Extract university info and simulate login success
-                const university = extractUniversity(email);
-                updateUniversityInfo(university);
-                showPage('courseSelection');
+                // Add loading state
+                const button = e.target.querySelector('button');
+                const originalText = button.textContent;
+                button.textContent = 'Signing In...';
+                button.classList.add('loading');
+                
+                // Simulate login delay
+                setTimeout(() => {
+                    // Extract university info and simulate login success
+                    const university = extractUniversity(email);
+                    updateUniversityInfo(university);
+                    button.textContent = originalText;
+                    button.classList.remove('loading');
+                    showPage('courseSelection');
+                }, 1500);
             });
 
             // Signup form handler
@@ -374,10 +513,21 @@
                     return;
                 }
                 
-                // Extract university info and simulate signup success
-                const university = extractUniversity(email);
-                updateUniversityInfo(university);
-                showPage('courseSelection');
+                // Add loading state
+                const button = e.target.querySelector('button');
+                const originalText = button.textContent;
+                button.textContent = 'Creating Account...';
+                button.classList.add('loading');
+                
+                // Simulate signup delay
+                setTimeout(() => {
+                    // Extract university info and simulate signup success
+                    const university = extractUniversity(email);
+                    updateUniversityInfo(university);
+                    button.textContent = originalText;
+                    button.classList.remove('loading');
+                    showPage('courseSelection');
+                }, 1500);
             });
 
             // Course selection form handler
@@ -399,11 +549,17 @@
                     return;
                 }
                 
-                // Store courses in localStorage for dashboard
-                localStorage.setItem('userCourses', JSON.stringify(courses));
+                // Add loading state
+                const button = e.target.querySelector('.auth-button');
+                const originalText = button.textContent;
+                button.textContent = 'Setting Up Dashboard...';
+                button.classList.add('loading');
                 
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
+                // Store courses and redirect
+                setTimeout(() => {
+                    localStorage.setItem('userCourses', JSON.stringify(courses));
+                    window.location.href = 'dashboard.html';
+                }, 1500);
             });
         });
 
