@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classmate - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 0;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .dashboard-header h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Dashboard Navigation */
+        .dashboard-nav {
+            background: white;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 2rem 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards and Components */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Quick Actions Grid */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .action-card {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .action-card:hover {
+            transform: scale(1.05);
+            color: white;
+            text-decoration: none;
+        }
+
+        .action-card h3 {
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        /* Course Grid */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .course-card {
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: background-color 0.3s;
+        }
+
+        .course-card:hover {
+            background: #e9ecef;
+        }
+
+        .course-card h4 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .course-stats {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* Recording Items */
+        .recording-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+        }
+
+        .recording-info h4 {
+            margin-bottom: 0.25rem;
+            color: #495057;
+        }
+
+        .recording-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .recording-features {
+            color: #28a745;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .recording-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Attendance Alerts */
+        .attendance-alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .attendance-alert.urgent {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-meta {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        /* Study Sessions */
+        .session-card {
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #f8fff8;
+            margin-bottom: 1rem;
+        }
+
+        .session-card.chemistry {
+            border-color: #007bff;
+            background: #f8fcff;
+        }
+
+        .session-info {
+            margin-bottom: 1rem;
+        }
+
+        .session-info p {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Community Chat */
+        .chat-container {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .chat-message {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .chat-message strong {
+            color: #495057;
+        }
+
+        .chat-timestamp {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-controls label {
+            font-weight: 500;
+        }
+
+        .filter-controls select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value.good {
+            color: #28a745;
+        }
+
+        .stat-value.warning {
+            color: #ffc107;
+        }
+
+        .stat-label {
+            color: #6c757d;
+        }
+
+        /* Recent Activity */
+        .activity-item {
+            padding: 1rem;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 1rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .activity-item p {
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-course {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tab-buttons {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+
+            .recording-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .recording-actions {
+                justify-content: center;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">Classmate</a>
+                <div class="nav-links">
+                    <div class="user-info">
+                        <div class="user-avatar">JD</div>
+                        <span>John Doe</span>
+                        <a href="auth.html">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <h1>Welcome to Your Classmate Dashboard</h1>
+            <p>University: <span id="userUniversity">State University</span> | Courses: <span id="courseCount">4</span> enrolled</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Navigation -->
+    <div class="dashboard-nav">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+                <button class="tab-button" onclick="showTab('recordings')">Lecture Recordings</button>
+                <button class="tab-button" onclick="showTab('attendance')">Attendance</button>
+                <button class="tab-button" onclick="showTab('community')">Community</button>
+                <button class="tab-button" onclick="showTab('calendar')">Calendar</button>
+                <button class="tab-button" onclick="showTab('resources')">Resources</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="quick-actions">
+                <a href="#" class="action-card" onclick="showTab('recordings')">
+                    <h3>🎧 Latest Recordings</h3>
+                    <p>3 new recordings</p>
+                </a>
+                <a href="#" class="action-card" onclick="showTab('attendance')">
+                    <h3>✅ Attendance Alerts</h3>
+                    <p>2 active alerts</p>
+                </a>
+                <a href="#" class="action-card" onclick="showTab('community')">
+                    <h3>💬 Community</h3>
+                    <p>5 new messages</p>
+                </a>
+                <a href="#" class="action-card" onclick="showTab('calendar')">
+                    <h3>📅 Upcoming</h3>
+                    <p>Quiz tomorrow</p>
+                </a>
+            </div>
+
+            <div class="card">
+                <h3>Recent Activity</h3>
+                <div class="activity-item">
+                    <p><span class="activity-course">MATH 101:</span> New lecture recording uploaded - "Calculus Derivatives"</p>
+                </div>
+                <div class="activity-item">
+                    <p><span class="activity-course">CHEM 201:</span> Study session scheduled for Thursday 7pm</p>
+                </div>
+                <div class="activity-item">
+                    <p><span class="activity-course">HIST 150:</span> Attendance question posted for today's class</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Your Courses</h3>
+                <div id="userCourses" class="course-grid">
+                    <!-- Courses will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recordings Tab -->
+        <div id="recordings" class="tab-content">
+            <div class="card">
+                <h3>🎧 Lecture Recordings</h3>
+                
+                <div class="filter-controls">
+                    <label for="courseFilter">Filter by Course:</label>
+                    <select id="courseFilter">
+                        <option value="all">All Courses</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="recording-item">
+                    <div class="recording-info">
+                        <h4>MATH 101 - Derivatives and Applications</h4>
+                        <div class="recording-meta">March 15, 2024 • 52 min • Quality: High</div>
+                        <div class="recording-features">📝 Transcript available • 🤖 AI Summary ready</div>
+                    </div>
+                    <div class="recording-actions">
+                        <button class="btn btn-success" onclick="playRecording('math101_derivatives')">▶️ Play</button>
+                        <button class="btn btn-primary" onclick="viewTranscript('math101_derivatives')">📄 Transcript</button>
+                    </div>
+                </div>
+
+                <div class="recording-item">
+                    <div class="recording-info">
+                        <h4>CHEM 201 - Organic Reactions</h4>
+                        <div class="recording-meta">March 14, 2024 • 48 min • Quality: Medium</div>
+                        <div class="recording-features">📝 Transcript available • 🤖 AI Summary ready</div>
+                    </div>
+                    <div class="recording-actions">
+                        <button class="btn btn-success" onclick="playRecording('chem201_organic')">▶️ Play</button>
+                        <button class="btn btn-primary" onclick="viewTranscript('chem201_organic')">📄 Transcript</button>
+                    </div>
+                </div>
+
+                <div class="recording-item">
+                    <div class="recording-info">
+                        <h4>HIST 150 - Renaissance Period</h4>
+                        <div class="recording-meta">March 13, 2024 • 45 min • Quality: High</div>
+                        <div class="recording-features">📝 Transcript available • 🤖 AI Summary ready</div>
+                    </div>
+                    <div class="recording-actions">
+                        <button class="btn btn-success" onclick="playRecording('hist150_renaissance')">▶️ Play</button>
+                        <button class="btn btn-primary" onclick="viewTranscript('hist150_renaissance')">📄 Transcript</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📱 Record New Lecture</h3>
+                <p>Start recording when you're in class to contribute to the community!</p>
+                <button class="btn btn-danger" onclick="startRecording()" style="padding: 1rem 2rem; font-size: 1.1rem;">🔴 Start Recording</button>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content">
+            <div class="card">
+                <h3>✅ Active Attendance Alerts</h3>
+                
+                <div class="attendance-alert urgent">
+                    <div class="alert-header">
+                        <h4>🚨 MATH 101 - Attendance Required NOW</h4>
+                        <button class="btn btn-success btn-sm" onclick="markAttendanceHandled('math101_alert1')">Mark Handled</button>
+                    </div>
+                    <div class="alert-meta">Posted by: Sarah M. • 2 minutes ago</div>
+                    <p>Professor is taking attendance via TopHat. Code: MATH2024</p>
+                </div>
+
+                <div class="attendance-alert">
+                    <div class="alert-header">
+                        <h4>📋 CHEM 201 - Sign-in Sheet</h4>
+                        <button class="btn btn-success btn-sm" onclick="markAttendanceHandled('chem201_alert1')">Mark Handled</button>
+                    </div>
+                    <div class="alert-meta">Posted by: Mike L. • 15 minutes ago</div>
+                    <p>Physical sign-in sheet being passed around. Row 3 currently.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📨 Post Attendance Alert</h3>
+                <form id="attendanceForm">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="attendanceCourse" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Course</label>
+                        <select id="attendanceCourse" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="attendanceMessage" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Message</label>
+                        <textarea id="attendanceMessage" rows="3" placeholder="e.g., Professor taking attendance via clickers, Question ID: 12345" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Alert</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>📊 Attendance Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>MATH 101</h4>
+                        <div class="stat-value good">92%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>CHEM 201</h4>
+                        <div class="stat-value warning">78%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>HIST 150</h4>
+                        <div class="stat-value good">95%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>ENG 102</h4>
+                        <div class="stat-value good">88%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Tab -->
+        <div id="community" class="tab-content">
+            <div class="card">
+                <h3>💬 Course Communities</h3>
+                
+                <div class="chat-container">
+                    <h4>MATH 101 Discussion</h4>
+                    <div class="chat-messages">
+                        <div class="chat-message">
+                            <p><strong>Jessica:</strong> Can someone explain the homework problem #7?</p>
+                            <div class="chat-timestamp">5 minutes ago</div>
+                        </div>
+                        <div class="chat-message">
+                            <p><strong>Alex:</strong> Study group tomorrow at 6pm in library room 204!</p>
+                            <div class="chat-timestamp">1 hour ago</div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" placeholder="Type your message..." id="chatInput">
+                        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📚 Study Sessions</h3>
+                
+                <div class="session-card">
+                    <div class="session-info">
+                        <h4>CHEM 201 Study Group</h4>
+                        <p>📅 Thursday, March 16 at 7:00 PM</p>
+                        <p>📍 Science Library, Room 301</p>
+                        <p>👥 8 people attending</p>
+                    </div>
+                    <button class="btn btn-success" onclick="joinStudySession('chem201_study1')">Join Session</button>
+                </div>
+
+                <div class="session-card chemistry">
+                    <div class="session-info">
+                        <h4>MATH 101 Exam Prep</h4>
+                        <p>📅 Saturday, March 18 at 2:00 PM</p>
+                        <p>📍 Student Center, Room B15</p>
+                        <p>👥 12 people attending</p>
+                    </div>
+                    <button class="btn btn-success" onclick="joinStudySession('math101_study1')">Join Session</button>
+                </div>
+
+                <button class="btn btn-warning" onclick="createStudySession()" style="margin-top: 1rem;">+ Create New Study Session</button>
+            </div>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <div class="card">
+                <h3>📅 Upcoming Deadlines & Events</h3>
+                
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; border-left: 4px solid #dc3545; background: #fff5f5; border-radius: 0 5px 5px 0;">
+                        <h4 style="color: #dc3545;">MATH 101 Quiz - Tomorrow</h4>
+                        <p>Chapters 5-7: Derivatives and Applications</p>
+                        <p>📍 Mathematics Building, Room 105</p>
+                    </div>
+                    
+                    <div style="padding: 1rem; border-left: 4px solid #ffc107; background: #fffbf0; border-radius: 0 5px 5px 0;">
+                        <h4 style="color: #856404;">CHEM 201 Lab Report Due - Friday</h4>
+                        <p>Organic Synthesis Lab #3</p>
+                        <p>📧 Submit via email to professor</p>
+                    </div>
+                    
+                    <div style="padding: 1rem; border-left: 4px solid #28a745; background: #f8fff8; border-radius: 0 5px 5px 0;">
+                        <h4 style="color: #28a745;">HIST 150 Midterm - March 22</h4>
+                        <p>Renaissance Period through Industrial Revolution</p>
+                        <p>📍 History Building, Room 201</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Tab -->
+        <div id="resources" class="tab-content">
+            <div class="card">
+                <h3>📖 Shared Resources</h3>
+                
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 10px; background: #f8f9fa;">
+                        <h4>MATH 101 - Calculus Study Guide</h4>
+                        <p>Shared by: Sarah M. • Downloaded: 45 times</p>
+                        <button class="btn btn-primary">📄 Download PDF</button>
+                    </div>
+                    
+                    <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 10px; background: #f8f9fa;">
+                        <h4>CHEM 201 - Reaction Mechanisms Cheat Sheet</h4>
+                        <p>Shared by: Mike L. • Downloaded: 32 times</p>
+                        <button class="btn btn-primary">📄 Download PDF</button>
+                    </div>
+                    
+                    <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 10px; background: #f8f9fa;">
+                        <h4>HIST 150 - Timeline of Renaissance Events</h4>
+                        <p>Shared by: Emma K. • Downloaded: 28 times</p>
+                        <button class="btn btn-primary">📄 Download PDF</button>
+                    </div>
+                </div>
+                
+                <button class="btn btn-warning" style="margin-top: 1rem;">+ Upload Resource</button>
+            </div>
+
+            <div class="card">
+                <h3>💡 Course Tips from Previous Students</h3>
+                
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; background: #e7f3ff; border-radius: 10px;">
+                        <h4>MATH 101 Tips</h4>
+                        <p>"Practice problems daily! The homework is similar to exam questions. Professor gives extra credit for attending office hours."</p>
+                        <small style="color: #6c757d;">- Anonymous Student, Fall 2023</small>
+                    </div>
+                    
+                    <div style="padding: 1rem; background: #fff3e0; border-radius: 10px;">
+                        <h4>CHEM 201 Tips</h4>
+                        <p>"Lab reports are worth 40% of your grade. Start them early! The professor is strict about late submissions."</p>
+                        <small style="color: #6c757d;">- Anonymous Student, Spring 2023</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab navigation
+        function showTab(tabId) {
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Placeholder functions for future functionality
+        function playRecording(recordingId) {
+            alert(`Playing recording: ${recordingId}`);
+        }
+
+        function viewTranscript(recordingId) {
+            alert(`Viewing transcript for: ${recordingId}`);
+        }
+
+        function startRecording() {
+            alert('Starting lecture recording...');
+        }
+
+        function markAttendanceHandled(alertId) {
+            alert(`Marking attendance alert as handled: ${alertId}`);
+            // Remove the alert from DOM
+            event.target.closest('.attendance-alert').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                alert(`Sending message: ${message}`);
+                input.value = '';
+            }
+        }
+
+        function joinStudySession(sessionId) {
+            alert(`Joining study session: ${sessionId}`);
+        }
+
+        function createStudySession() {
+            alert('Opening create study session form...');
+        }
+
+        // Load user data from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserCourses();
+            populateFilterOptions();
+            
+            // Attendance form handler
+            document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const course = document.getElementById('attendanceCourse').value;
+                const message = document.getElementById('attendanceMessage').value;
+                
+                if (course && message.trim()) {
+                    alert(`Posting attendance alert for ${course}: ${message}`);
+                    document.getElementById('attendanceMessage').value = '';
+                } else {
+                    alert('Please select a course and enter a message.');
+                }
+            });
+        });
+
+        function loadUserCourses() {
+            const courses = JSON.parse(localStorage.getItem('userCourses') || '[]');
+            const defaultCourses = [
+                'MATH 101 - Section 001',
+                'CHEM 201 - Section 002', 
+                'HIST 150 - Section 003',
+                'ENG 102 - Section 001'
+            ];
+            
+            const coursesToDisplay = courses.length > 0 ? courses : defaultCourses;
+            const courseGrid = document.getElementById('userCourses');
+            const courseCount = document.getElementById('courseCount');
+            
+            courseCount.textContent = coursesToDisplay.length;
+            
+            courseGrid.innerHTML = coursesToDisplay.map(course => {
+                const courseName = course.split(' - ')[0];
+                const memberCount = Math.floor(Math.random() * 20) + 15;
+                const recordingCount = Math.floor(Math.random() * 15) + 5;
+                
+                return `
+                    <div class="course-card">
+                        <h4>${course}</h4>
+                        <p>${getCourseName(courseName)}</p>
+                        <div class="course-stats">📊 ${recordingCount} recordings • 👥 ${memberCount} members</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateFilterOptions() {
+            const courses = JSON.parse(localStorage.getItem('userCourses') || '[]');
+            const defaultCourses = [
+                'MATH 101 - Section 001',
+                'CHEM 201 - Section 002', 
+                'HIST 150 - Section 003',
+                'ENG 102 - Section 001'
+            ];
+            
+            const coursesToDisplay = courses.length > 0 ? courses : defaultCourses;
+            const courseFilter = document.getElementById('courseFilter');
+            const attendanceCourse = document.getElementById('attendanceCourse');
+            
+            // Clear existing options (except "All Courses")
+            courseFilter.innerHTML = '<option value="all">All Courses</option>';
+            attendanceCourse.innerHTML = '';
+            
+            coursesToDisplay.forEach(course => {
+                const option1 = new Option(course, course.toLowerCase().replace(/\s+/g, ''));
+                const option2 = new Option(course, course);
+                
+                courseFilter.appendChild(option1);
+                attendanceCourse.appendChild(option2);
+            });
+        }
+
+        function getCourseName(courseCode) {
+            const courseNames = {
+                'MATH 101': 'Calculus I',
+                'CHEM 201': 'Organic Chemistry',
+                'HIST 150': 'World History',
+                'ENG 102': 'Composition II',
+                'PHYS 101': 'Physics I',
+                'BIOL 150': 'Biology I',
+                'PSYC 101': 'Introduction to Psychology'
+            };
+            
+            return courseNames[courseCode] || 'Course';
+        }
+    </script>
+</body>
+</html>

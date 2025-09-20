@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classmate - Join Your Learning Community</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Auth Pages */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auth-button {
+            width: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .switch-auth {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+        }
+
+        .switch-auth a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .add-course-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-course-btn:hover {
+            background: #218838;
+        }
+
+        /* University Info */
+        .university-info {
+            background: rgba(103, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .university-info h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .auth-card {
+                margin: 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">Classmate</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="#" onclick="showPage('login')">Login</a>
+                    <a href="#" onclick="showPage('signup')">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div id="login" class="page active">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Welcome Back</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">University Email</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@university.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">Sign In</button>
+                </form>
+                <div class="switch-auth">
+                    Don't have an account? <a href="#" onclick="showPage('signup')">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signup" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Join Classmate</h2>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">University Email</label>
+                        <input type="email" id="signupEmail" name="email" placeholder="your.email@university.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    <button type="submit" class="auth-button">Create Account</button>
+                </form>
+                <div class="switch-auth">
+                    Already have an account? <a href="#" onclick="showPage('login')">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Selection Page -->
+    <div id="courseSelection" class="page">
+        <div class="auth-container">
+            <div class="auth-card" style="max-width: 500px;">
+                <h2>Select Your Courses</h2>
+                
+                <div class="university-info">
+                    <h3>🎓 State University</h3>
+                    <p>You've been connected with 2,847 students from your university!</p>
+                </div>
+                
+                <p style="text-align: center; margin-bottom: 2rem; color: #666;">Add the classes you're currently enrolled in:</p>
+                
+                <form id="courseForm">
+                    <div class="form-group">
+                        <label for="course1">Course 1</label>
+                        <input type="text" id="course1" name="course1" placeholder="e.g., MATH 101 - Section 001">
+                    </div>
+                    <div class="form-group">
+                        <label for="course2">Course 2</label>
+                        <input type="text" id="course2" name="course2" placeholder="e.g., CHEM 201 - Section 002">
+                    </div>
+                    <div class="form-group">
+                        <label for="course3">Course 3</label>
+                        <input type="text" id="course3" name="course3" placeholder="e.g., HIST 150 - Section 003">
+                    </div>
+                    <div class="form-group">
+                        <label for="course4">Course 4</label>
+                        <input type="text" id="course4" name="course4" placeholder="e.g., ENG 102 - Section 001">
+                    </div>
+                    
+                    <button type="button" class="add-course-btn" onclick="addCourse()">+ Add Another Course</button>
+                    
+                    <button type="submit" class="auth-button">Continue to Dashboard</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Add course functionality
+        function addCourse() {
+            const form = document.getElementById('courseForm');
+            const courseInputs = form.querySelectorAll('input[type="text"]');
+            const courseCount = courseInputs.length;
+            const newCourseNum = courseCount + 1;
+            
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+            formGroup.innerHTML = `
+                <label for="course${newCourseNum}">Course ${newCourseNum}</label>
+                <input type="text" id="course${newCourseNum}" name="course${newCourseNum}" placeholder="e.g., PHYS 101 - Section 001">
+            `;
+            
+            // Insert before the add button
+            const addButton = form.querySelector('.add-course-btn');
+            form.insertBefore(formGroup, addButton);
+        }
+
+        // Extract university from email
+        function extractUniversity(email) {
+            const domain = email.split('@')[1];
+            // Simple mapping for demo - in real app, you'd have a comprehensive database
+            const universityMap = {
+                'stanford.edu': 'Stanford University',
+                'mit.edu': 'MIT',
+                'harvard.edu': 'Harvard University',
+                'berkeley.edu': 'UC Berkeley',
+                'ucla.edu': 'UCLA'
+            };
+            
+            return universityMap[domain] || 'State University';
+        }
+
+        // Form handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Login form handler
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                
+                // Extract university info and simulate login success
+                const university = extractUniversity(email);
+                updateUniversityInfo(university);
+                showPage('courseSelection');
+            });
+
+            // Signup form handler
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                // Extract university info and simulate signup success
+                const university = extractUniversity(email);
+                updateUniversityInfo(university);
+                showPage('courseSelection');
+            });
+
+            // Course selection form handler
+            document.getElementById('courseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get all course inputs
+                const courseInputs = document.querySelectorAll('#courseForm input[type="text"]');
+                const courses = [];
+                
+                courseInputs.forEach(input => {
+                    if (input.value.trim()) {
+                        courses.push(input.value.trim());
+                    }
+                });
+                
+                if (courses.length === 0) {
+                    alert('Please add at least one course!');
+                    return;
+                }
+                
+                // Store courses in localStorage for dashboard
+                localStorage.setItem('userCourses', JSON.stringify(courses));
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            });
+        });
+
+        function updateUniversityInfo(university) {
+            const universityInfo = document.querySelector('.university-info h3');
+            if (universityInfo) {
+                universityInfo.textContent = `🎓 ${university}`;
+            }
+        }
+    </script>
+</body>
+</html>
