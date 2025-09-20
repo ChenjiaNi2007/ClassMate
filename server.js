@@ -9,9 +9,7 @@ const app = express();
 const port = 3000;
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-    apiKey: ''
-});
+const openai = new OpenAI();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
